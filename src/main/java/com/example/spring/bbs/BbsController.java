@@ -5,8 +5,12 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+
 
 /**
  * 게시글 관련 요청을 처리하는 웹 컨트롤러 클래스
@@ -34,4 +38,107 @@ public class BbsController {
         // bbs/list.jsp 의 화면을 렌더링
         return "bbs/list";
     }
+       /**
+     * 게시글 등록 화면 요청 처리 (GET 방식)
+     * 사용자가 글을 작성할 수 있는 입력 폼 화면을 보여줌
+     * @return "bbs/create" 뷰 이름 (예: bbs/create.jsp)
+     */
+    @RequestMapping(value = "/bbses/create", method = RequestMethod.GET)
+    public String createGet() {
+        // 단순히 글쓰기 화면만 보여주는 기능이므로 별도의 데이터 전달 없음
+        return "bbs/create";
+    }
+ /**
+     * 게시글 등록 요청 처리 (POST 방식)
+     * @param bbs 사용자가 작성한 게시글 정보(BbsDto)
+     * @param redirectAttributes 리다이렉트 시 전달할 메시지를 담는 객체
+     * @return 등록 성공 시 목록 페이지로 리다이렉트, 실패 시 글쓰기 화면으로 이동
+     */
+    @RequestMapping(value = "/bbses/create", method = RequestMethod.POST)
+    public String createPost(BbsDto bbs, RedirectAttributes redirectAttributes) {
+        // 서비스 계층을 통해 게시글 등록 처리
+        boolean created = bbsService.create(bbs);
+
+        if (created) {
+            // 등록 성공 시 메시지를 플래시 속성으로 전달하고 목록 페이지로 리다이렉트
+            redirectAttributes.addFlashAttribute("successMessage", "게시글이 등록되었습니다.");
+            return "redirect:/bbses";
+        }
+
+        // 등록 실패 시 에러 메시지를 플래시 속성으로 전달하고 글쓰기 화면으로 리다이렉트
+        redirectAttributes.addFlashAttribute("errorMessage", "게시글 등록에 실패했습니다.");
+        return "redirect:/bbses/create";
+    }
+
+    /**
+     * 게시글 상세보기 요청 처리 (GET 방식)
+     * @param id 상세 조회할 게시글 ID
+     * @param model 뷰에 전달할 게시글 데이터를 담는 객체
+     * @return 상세보기 화면 뷰 이름 ("bbs/read.jsp")
+     */
+    @RequestMapping(value = "/bbses/{id}", method = RequestMethod.GET)
+    public String readGet(@PathVariable("id") int id, Model model) {
+        // 서비스 계층을 통해 게시글 ID에 해당하는 게시글 데이터 조회
+        BbsDto bbs = bbsService.read(id);
+
+        // 조회한 게시글 데이터를 모델에 담아 뷰로 전달
+        model.addAttribute("bbs", bbs);
+
+        // 게시글 상세보기 화면 렌더링
+        return "bbs/read";
+    }
+
+    /**
+     * 게시글 수정 화면 요청 처리 (GET 방식)
+     * @param id 수정할 게시글의 ID
+     * @param model 수정할 게시글 데이터를 뷰로 전달하기 위한 모델 객체
+     * @return "bbs/update" 뷰 이름 (예: bbs/update.jsp)
+     */
+    @RequestMapping(value = "/bbses/{id}/update", method = RequestMethod.GET)
+    public String updateGet(@PathVariable("id") int id, Model model) {
+        BbsDto bbs = bbsService.read(id);
+        model.addAttribute("bbs", bbs);
+        return "bbs/update";
+    }
+
+    /**
+     * 게시글 수정 요청 처리 (POST 방식)
+     * @param id 수정할 게시글 ID
+     * @param bbs 수정된 게시글 정보 (비밀번호 포함)
+     * @param redirectAttributes 결과 메시지 전달용 객체
+     * @return 수정 성공 시 상세 페이지로, 실패 시 수정 페이지로 리다이렉트
+     */
+    @RequestMapping(value = "/bbses/{id}/update", method = RequestMethod.POST)
+    public String updatePost(@PathVariable("id") int id, BbsDto bbs, RedirectAttributes redirectAttributes) {
+        // URL 경로에서 받은 ID를 bbs 객체에 설정
+        bbs.setId(id);
+
+        // 게시글 수정 처리
+        if (bbsService.update(bbs)) {
+            redirectAttributes.addFlashAttribute("successMessage", "게시글이 수정되었습니다.");
+            return "redirect:/bbses/" + id;
+        }
+
+        // 실패 시 메시지 전달 후 수정 페이지로 이동
+        redirectAttributes.addFlashAttribute("errorMessage", "게시글 수정에 실패했습니다. (비밀번호 확인)");
+        return "redirect:/bbses/" + id + "/update";
+    }
+
+    /**
+     * 게시글 삭제 요청 처리 (POST 방식)
+     */
+    @RequestMapping(value = "/bbses/{id}/delete", method = RequestMethod.POST)
+    public String deletePost(@PathVariable("id") int id, BbsDto bbs, RedirectAttributes redirectAttributes) {
+        bbs.setId(id);
+        boolean deleted = bbsService.delete(bbs);
+
+        if (deleted) {
+            redirectAttributes.addFlashAttribute("successMessage", "게시글이 삭제되었습니다.");
+            return "redirect:/bbses";
+        }
+
+        redirectAttributes.addFlashAttribute("errorMessage", "게시글 삭제에 실패했습니다. (비밀번호 확인)");
+        return "redirect:/bbses/" + id;
+    }
 }
+

@@ -16,6 +16,16 @@ public class PostService {
     PostDao postDao;
 
     /**
+     * 비밀번호 검증 메서드
+     * @param post 사용자가 입력한 게시글 정보(ID, 비밀번호 포함)
+     * @return 비밀번호 일치 여부 (true: 일치, false: 불일치 또는 게시글 없음)
+     */
+    private boolean verifyPassword(PostDto post) {
+        PostDto originalPost = postDao.read(post.getId());
+        return originalPost != null && originalPost.getPassword().equals(post.getPassword());
+    }
+
+    /**
      * 게시글 목록을 조회하는 메서드
      * @return 게시글 리스트 (List<PostDto>)
      */
@@ -42,5 +52,35 @@ public class PostService {
     public PostDto read(int id) {
         // DAO를 통해 ID에 해당하는 게시글을 조회
         return postDao.read(id);
+    }
+
+    /**
+     * 게시글을 수정하는 메서드
+     * - 비밀번호 검증 후 수정 처리
+     * @param post 수정할 게시글 정보 (ID, 비밀번호 포함)
+     * @return 수정 성공 여부 (true: 성공, false: 실패)
+     */
+    public boolean update(PostDto post) {
+        if (!verifyPassword(post)) {
+            return false;
+        }
+
+        int result = postDao.update(post);
+        return result > 0;
+    }
+
+    /**
+     * 게시글을 삭제하는 메서드
+     * - 비밀번호 검증 후 삭제 처리
+     * @param post 삭제할 게시글 정보 (ID, 비밀번호 포함)
+     * @return 삭제 성공 여부 (true: 성공, false: 실패)
+     */
+    public boolean delete(PostDto post) {
+        if (!verifyPassword(post)) {
+            return false;
+        }
+
+        int result = postDao.delete(post.getId());
+        return result > 0;
     }
 }

@@ -47,7 +47,7 @@ public class PostDao {
      */
     public int create(PostDto post) {
         // 게시글의 제목, 내용, 작성자, 비밀번호만 저장하며, 작성일시는 DB에서 자동 처리
-        String query = "INSERT INTO post (title, content, username, password) VALUES (?, ?, ?, ?)";
+        String query = "INSERT INTO post (TITLE, CONTENT, USERNAME, PASSWORD) VALUES (?, ?, ?, ?)";
         int result = -1;
 
         try {
@@ -85,5 +85,46 @@ public class PostDao {
         }
 
         return post;
+    }
+
+    /**
+     * 게시글을 수정하는 메서드
+     * @param post 수정할 게시글 정보 (ID 포함)
+     * @return 수정된 행 수 (성공 시 1, 실패 시 -1)
+     */
+    public int update(PostDto post) {
+        String query = "UPDATE post SET TITLE = ?, CONTENT = ?, USERNAME = ?, PASSWORD = ? WHERE ID = ? LIMIT 1";
+        int result = -1;
+
+        try {
+            result = jdbcTemplate.update(query,
+                    post.getTitle(),
+                    post.getContent(),
+                    post.getUsername(),
+                    post.getPassword(),
+                    post.getId());
+        } catch (DataAccessException e) {
+            logger.error("게시글 수정 오류: {}", e.getMessage(), e);
+        }
+
+        return result;
+    }
+
+    /**
+     * 게시글을 삭제하는 메서드
+     * @param id 삭제할 게시글의 ID
+     * @return 삭제된 행 수 (성공 시 1, 실패 시 -1)
+     */
+    public int delete(int id) {
+        String query = "DELETE FROM post WHERE id = ? LIMIT 1";
+        int result = -1;
+
+        try {
+            result = jdbcTemplate.update(query, id);
+        } catch (DataAccessException e) {
+            logger.error("게시글 삭제 오류: {}", e.getMessage(), e);
+        }
+
+        return result;
     }
 }

@@ -30,7 +30,7 @@ uri="http://java.sun.com/jsp/jstl/core" %> <%@ taglib prefix="fmt" uri="http://j
               <c:forEach items="${bbses}" var="bbs">
                 <tr>
                   <td>${bbs.id}</td>
-                  <td><a href="bbses/${bbs.id}/" style="text-decoration: none">${bbs.title}</a></td>
+                  <td><a href="/bbses/${bbs.id}/" style="text-decoration: none">${bbs.title}</a></td>
                   <td>${bbs.username}</td>
                   <td><fmt:formatDate value="${bbs.createdAt}" pattern="yyyy-MM-dd HH:mm" /></td>
                   <td><fmt:formatDate value="${bbs.updatedAt}" pattern="yyyy-MM-dd HH:mm" /></td>

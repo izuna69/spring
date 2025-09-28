@@ -87,4 +87,57 @@ public class PostController {
         // 게시글 상세보기 화면 렌더링
         return "post/read";
     }
+
+    /**
+     * 게시글 수정 화면 요청 처리 (GET 방식)
+     * @param id 수정할 게시글의 ID
+     * @param model 수정할 게시글 데이터를 뷰로 전달하기 위한 모델 객체
+     * @return "post/update" 뷰 이름 (예: post/update.jsp)
+     */
+    @RequestMapping(value = "/posts/{id}/update", method = RequestMethod.GET)
+    public String updateGet(@PathVariable("id") int id, Model model) {
+        PostDto post = postService.read(id);
+        model.addAttribute("post", post);
+        return "post/update";
+    }
+
+    /**
+     * 게시글 수정 요청 처리 (POST 방식)
+     * @param id 수정할 게시글 ID
+     * @param post 수정된 게시글 정보 (비밀번호 포함)
+     * @param redirectAttributes 결과 메시지 전달용 객체
+     * @return 수정 성공 시 상세 페이지로, 실패 시 수정 페이지로 리다이렉트
+     */
+    @RequestMapping(value = "/posts/{id}/update", method = RequestMethod.POST)
+    public String updatePost(@PathVariable("id") int id, PostDto post, RedirectAttributes redirectAttributes) {
+        // URL 경로에서 받은 ID를 post 객체에 설정
+        post.setId(id);
+
+        // 게시글 수정 처리
+        if (postService.update(post)) {
+            redirectAttributes.addFlashAttribute("successMessage", "게시글이 수정되었습니다.");
+            return "redirect:/posts/" + id;
+        }
+
+        // 실패 시 메시지 전달 후 수정 페이지로 이동
+        redirectAttributes.addFlashAttribute("errorMessage", "게시글 수정에 실패했습니다. (비밀번호 확인)");
+        return "redirect:/posts/" + id + "/update";
+    }
+
+    /**
+     * 게시글 삭제 요청 처리 (POST 방식)
+     */
+    @RequestMapping(value = "/posts/{id}/delete", method = RequestMethod.POST)
+    public String deletePost(@PathVariable("id") int id, PostDto post, RedirectAttributes redirectAttributes) {
+        post.setId(id);
+        boolean deleted = postService.delete(post);
+
+        if (deleted) {
+            redirectAttributes.addFlashAttribute("successMessage", "게시글이 삭제되었습니다.");
+            return "redirect:/posts";
+        }
+
+        redirectAttributes.addFlashAttribute("errorMessage", "게시글 삭제에 실패했습니다. (비밀번호 확인)");
+        return "redirect:/posts/" + id;
+    }
 }
