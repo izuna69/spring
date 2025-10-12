@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 /**
@@ -56,7 +57,7 @@ public class PostController {
      * @param redirectAttributes 리다이렉트 시 전달할 메시지를 담는 객체
      * @return 등록 성공 시 글 보기로 리다이렉트, 실패 시 글쓰기 화면으로 이동
      */
-    @PostMapping("/create")
+    @RequestMapping(value = "/posts/create", method = RequestMethod.POST)
     public String createPost(PostDto post, RedirectAttributes redirectAttributes) {
         // 서비스 계층을 통해 게시글 등록 처리
         int createdId = postService.create(post);
