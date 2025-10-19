@@ -1,5 +1,3 @@
-com\example\spring\post\PostDto.class
-com\example\spring\post\PostController.class
 com\example\spring\HomeController.class
 com\example\spring\post\PostService.class
 com\example\spring\bbs\BbsDao.class
@@ -7,3 +5,5 @@ com\example\spring\bbs\BbsDto.class
 com\example\spring\bbs\BbsService.class
 com\example\spring\post\PostDao.class
 com\example\spring\bbs\BbsController.class
+com\example\spring\post\PostDto.class
+com\example\spring\post\PostController.class

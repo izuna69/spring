@@ -5,10 +5,14 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+
 
 
 
@@ -17,17 +21,19 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
  * 사용자 요청을 받아 서비스 계층과 연결하고 뷰로 데이터를 전달함
  */
 @Controller // Spring MVC에서 이 클래스가 컨트롤러임을 명시
+@RequestMapping("/bbses")
 public class BbsController {
 
     @Autowired // BbsService 객체를 자동으로 주입
     BbsService bbsService;
+
 
     /**
      * 게시글 목록 화면 요청 처리 (GET 방식)
      * @param model 뷰에 데이터를 전달하기 위한 객체
      * @return "bbs/list" 뷰 이름 (bbs/list.jsp)
      */
-    @RequestMapping(value = "/bbses", method = RequestMethod.GET)
+    @GetMapping("")
     public String listGet(Model model) {
         // 서비스 계층을 통해 게시글 목록을 가져옴
         List<BbsDto> bbses = bbsService.list();
@@ -38,31 +44,31 @@ public class BbsController {
         // bbs/list.jsp 의 화면을 렌더링
         return "bbs/list";
     }
-       /**
+    /**
      * 게시글 등록 화면 요청 처리 (GET 방식)
      * 사용자가 글을 작성할 수 있는 입력 폼 화면을 보여줌
      * @return "bbs/create" 뷰 이름 (예: bbs/create.jsp)
      */
-    @RequestMapping(value = "/bbses/create", method = RequestMethod.GET)
+    @GetMapping("/create")
     public String createGet() {
         // 단순히 글쓰기 화면만 보여주는 기능이므로 별도의 데이터 전달 없음
         return "bbs/create";
-    }
- /**
+    }  /**
      * 게시글 등록 요청 처리 (POST 방식)
      * @param bbs 사용자가 작성한 게시글 정보(BbsDto)
      * @param redirectAttributes 리다이렉트 시 전달할 메시지를 담는 객체
-     * @return 등록 성공 시 목록 페이지로 리다이렉트, 실패 시 글쓰기 화면으로 이동
+     * @return 등록 성공 시 글 보기로 리다이렉트, 실패 시 글쓰기 화면으로 이동
      */
-    @RequestMapping(value = "/bbses/create", method = RequestMethod.POST)
-    public String createPost(BbsDto bbs, RedirectAttributes redirectAttributes) {
+    @PostMapping("/create")
+    // @RequestMapping(value = "/create", method = RequestMethod.POST)
+    public String createBbs(BbsDto bbs, RedirectAttributes redirectAttributes) {
         // 서비스 계층을 통해 게시글 등록 처리
-        boolean created = bbsService.create(bbs);
+        int createdId = bbsService.create(bbs);
 
-        if (created) {
-            // 등록 성공 시 메시지를 플래시 속성으로 전달하고 목록 페이지로 리다이렉트
+        if (createdId > 0) {
+            // 등록 성공 시 메시지를 플래시 속성으로 전달하고 등록된 글 보기로 리다이렉트
             redirectAttributes.addFlashAttribute("successMessage", "게시글이 등록되었습니다.");
-            return "redirect:/bbses";
+            return "redirect:/bbses/" + createdId;
         }
 
         // 등록 실패 시 에러 메시지를 플래시 속성으로 전달하고 글쓰기 화면으로 리다이렉트
@@ -76,7 +82,7 @@ public class BbsController {
      * @param model 뷰에 전달할 게시글 데이터를 담는 객체
      * @return 상세보기 화면 뷰 이름 ("bbs/read.jsp")
      */
-    @RequestMapping(value = "/bbses/{id}", method = RequestMethod.GET)
+    @GetMapping("/{id}")
     public String readGet(@PathVariable("id") int id, Model model) {
         // 서비스 계층을 통해 게시글 ID에 해당하는 게시글 데이터 조회
         BbsDto bbs = bbsService.read(id);
@@ -94,7 +100,7 @@ public class BbsController {
      * @param model 수정할 게시글 데이터를 뷰로 전달하기 위한 모델 객체
      * @return "bbs/update" 뷰 이름 (예: bbs/update.jsp)
      */
-    @RequestMapping(value = "/bbses/{id}/update", method = RequestMethod.GET)
+    @GetMapping("/{id}/update")
     public String updateGet(@PathVariable("id") int id, Model model) {
         BbsDto bbs = bbsService.read(id);
         model.addAttribute("bbs", bbs);
@@ -108,8 +114,8 @@ public class BbsController {
      * @param redirectAttributes 결과 메시지 전달용 객체
      * @return 수정 성공 시 상세 페이지로, 실패 시 수정 페이지로 리다이렉트
      */
-    @RequestMapping(value = "/bbses/{id}/update", method = RequestMethod.POST)
-    public String updatePost(@PathVariable("id") int id, BbsDto bbs, RedirectAttributes redirectAttributes) {
+    @PostMapping("/{id}/update")
+    public String updateBbs(@PathVariable("id") int id, BbsDto bbs, RedirectAttributes redirectAttributes) {
         // URL 경로에서 받은 ID를 bbs 객체에 설정
         bbs.setId(id);
 
@@ -127,8 +133,8 @@ public class BbsController {
     /**
      * 게시글 삭제 요청 처리 (POST 방식)
      */
-    @RequestMapping(value = "/bbses/{id}/delete", method = RequestMethod.POST)
-    public String deletePost(@PathVariable("id") int id, BbsDto bbs, RedirectAttributes redirectAttributes) {
+    @PostMapping("/{id}/delete")
+    public String deleteBbs(@PathVariable("id") int id, BbsDto bbs, RedirectAttributes redirectAttributes) {
         bbs.setId(id);
         boolean deleted = bbsService.delete(bbs);
 
@@ -141,4 +147,3 @@ public class BbsController {
         return "redirect:/bbses/" + id;
     }
 }
-

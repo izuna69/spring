@@ -2,126 +2,119 @@ package com.example.spring.bbs;
 
 import java.util.List;
 
+import org.mybatis.spring.SqlSessionTemplate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
-import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
-@Component // 해당 클래스가 Spring의 Bean으로 등록되도록 지정
+@Component
 public class BbsDao {
 
-    // 로그 출력을 위한 Logger 객체 생성
     private static final Logger logger = LoggerFactory.getLogger(BbsDao.class);
 
-    @Autowired // Spring이 JdbcTemplate 객체를 자동으로 주입
+    @Autowired
     JdbcTemplate jdbcTemplate;
+
+    @Autowired
+    private SqlSessionTemplate sqlSessionTemplate;
 
     /**
      * 게시글 목록을 데이터베이스에서 조회하는 메서드
-     * @return 게시글(BbsDto) 리스트
+     * MyBatis 매퍼(bbsMapper.xml)의 list 구문을 호출하여 전체 게시글을 조회함
+     *
+     * @return 게시글(BbsDto) 리스트, 조회 실패 시 null 또는 빈 리스트 반환
      */
     public List<BbsDto> list() {
-        // 게시글을 ID 내림차순으로 정렬하여 전체 조회하는 SQL 쿼리
-        String query = "SELECT ID, TITLE, CONTENT, USERNAME, PASSWORD, CREATED_AT, UPDATED_AT FROM bbs ORDER BY ID DESC";
-
         List<BbsDto> bbses = null;
 
         try {
-            // 쿼리 실행 후 결과를 BbsDto 객체 목록으로 매핑
-            bbses = jdbcTemplate.query(query, new BeanPropertyRowMapper<>(BbsDto.class));
+            bbses = sqlSessionTemplate.selectList("bbsMapper.list");
         } catch (DataAccessException e) {
-            // 데이터베이스 조회 중 오류 발생 시 로그 출력
             logger.error("게시글 목록 오류 : {}", e.getMessage(), e);
         }
 
         return bbses;
     }
-/**
-     * 게시글을 데이터베이스에 저장하는 메서드
+
+    /**
+     * 게시글을 데이터베이스에 저장하는 메서드 (MyBatis 기반)
      * @param bbs 사용자가 작성한 게시글 데이터
-     * @return 삽입된 행 수 (성공 시 1, 실패 시 -1)
+     * @return 삽입된 게시글 ID (성공 시 bbs.getId()에 자동 주입됨, 실패 시 -1)
      */
     public int create(BbsDto bbs) {
-        // 게시글의 제목, 내용, 작성자, 비밀번호만 저장하며, 작성일시는 DB에서 자동 처리
-        String query = "INSERT INTO bbs (title, content, username, password) VALUES (?, ?, ?, ?)";
-        int result = -1;
-
+int result = -1;
         try {
-            // 쿼리 실행 후 삽입 결과 행 수 반환
-            result = jdbcTemplate.update(query,
-                    bbs.getTitle(),
-                    bbs.getContent(),
-                    bbs.getUsername(),
-                    bbs.getPassword());
-        } catch (DataAccessException e) {
-            // 예외 발생 시 로그 출력
-            logger.error("게시글 등록 오류 : {}", e.getMessage(), e);
-        }
+            // MyBatis 매퍼의 bbsMapper.create 구문 실행
+            // useGeneratedKeys="true"와 keyProperty="id"가 설정되어 있어 bbs.id에 자동으로 삽입된 ID가 주입됨
+            result = sqlSessionTemplate.insert("bbsMapper.create", bbs);
 
+        } catch (DataAccessException e) {
+            logger.error("게시글 작성 오류 : {}", e.getMessage(), e);
+        }
         return result;
     }
 
+
+
     /**
-     * 게시글 ID를 기준으로 게시글을 조회하는 메서드
+     * 게시글 ID를 기준으로 단건 조회하는 메서드
+     * MyBatis 매퍼(bbsMapper.read)를 호출하여 게시글 1건을 조회함
+     *
      * @param id 조회할 게시글의 ID
-     * @return 게시글 정보(BbsDto), 조회 실패 시 null 반환
+     * @return BbsDto 객체 (조회된 게시글), 실패 시 null 반환
      */
     public BbsDto read(int id) {
-        // 게시글 단건 조회 SQL 쿼리
-        String query = "SELECT id, title, content, username, password, created_at, updated_at FROM bbs WHERE id = ? LIMIT 1";
-
         BbsDto bbs = null;
 
         try {
-            // ID에 해당하는 게시글 조회 후 BbsDto 객체로 반환
-            bbs = jdbcTemplate.queryForObject(query, new BeanPropertyRowMapper<>(BbsDto.class), id);
+            // bbsMapper.xml에 정의된 <select id="read"> 구문 실행
+            bbs = sqlSessionTemplate.selectOne("bbsMapper.read", id);
         } catch (DataAccessException e) {
-            // 예외 발생 시 로그 출력
-            logger.error("게시글 조회 오류 (ID: {}): {}", id, e.getMessage(), e);
+            // SQL 실행 중 예외 발생 시 로그 출력
+            logger.error("게시글 보기 오류 : {}", e.getMessage(), e);
         }
 
         return bbs;
     }
-
-    /**
+        /**
      * 게시글을 수정하는 메서드
+     * MyBatis 매퍼(bbsMapper.update)를 호출하여 게시글 정보를 DB에 반영함
+     *
      * @param bbs 수정할 게시글 정보 (ID 포함)
-     * @return 수정된 행 수 (성공 시 1, 실패 시 -1)
+     * @return 수정된 행 수 (성공 시 1, 실패 또는 오류 시 -1)
      */
     public int update(BbsDto bbs) {
-        String query = "UPDATE bbs SET title = ?, content = ?, username = ?, password = ? WHERE id = ? LIMIT 1";
         int result = -1;
 
         try {
-            result = jdbcTemplate.update(query,
-                    bbs.getTitle(),
-                    bbs.getContent(),
-                    bbs.getUsername(),
-                    bbs.getPassword(),
-                    bbs.getId());
+            // bbsMapper.xml의 <update id="update"> 구문 실행
+            result = sqlSessionTemplate.update("bbsMapper.update", bbs);
         } catch (DataAccessException e) {
-            logger.error("게시글 수정 오류: {}", e.getMessage(), e);
+            // SQL 실행 중 오류 발생 시 로그 출력
+            logger.error("게시글 수정 오류 : {}", e.getMessage(), e);
         }
 
         return result;
     }
-
     /**
      * 게시글을 삭제하는 메서드
+     * MyBatis 매퍼(bbsMapper.delete)를 호출하여 ID에 해당하는 게시글을 삭제함
+     *
      * @param id 삭제할 게시글의 ID
-     * @return 삭제된 행 수 (성공 시 1, 실패 시 -1)
+     * @return 삭제된 행 수 (성공 시 1, 실패 또는 예외 시 -1)
      */
     public int delete(int id) {
-        String query = "DELETE FROM bbs WHERE id = ? LIMIT 1";
         int result = -1;
 
         try {
-            result = jdbcTemplate.update(query, id);
+            // bbsMapper.xml의 <delete id="delete"> 구문 실행
+            result = sqlSessionTemplate.delete("bbsMapper.delete", id);
         } catch (DataAccessException e) {
-            logger.error("게시글 삭제 오류: {}", e.getMessage(), e);
+            // 예외 발생 시 로그 출력
+            logger.error("게시글 삭제 오류 : {}", e.getMessage(), e);
         }
 
         return result;
