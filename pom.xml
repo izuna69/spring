@@ -131,6 +131,12 @@
       <artifactId>mybatis</artifactId>
       <version>3.5.13</version>
     </dependency>
+    <!-- Spring Security -->
+    <dependency>
+      <groupId>org.springframework.security</groupId>
+      <artifactId>spring-security-crypto</artifactId>
+      <version>${spring.security.version}</version>
+    </dependency>
   </dependencies>
 
   <!-- 빌드 설정 -->

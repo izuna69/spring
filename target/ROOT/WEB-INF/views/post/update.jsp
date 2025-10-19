@@ -11,6 +11,7 @@
       <div class="row">
         <div class="col-12">
           <%-- 게시글 수정 --%>
+
           <form id="updateForm" action="/posts/${post.id}/update" method="POST">
             <div class="card mb-3">
               <div class="card-header">게시글 수정 (<span class="text-danger">*</span> 표시는 필수항목입니다.)</div>

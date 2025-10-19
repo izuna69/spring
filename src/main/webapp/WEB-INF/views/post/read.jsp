@@ -23,7 +23,7 @@ prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %> <% pageContext.setAt
                 <fmt:formatDate value="${post.createdAt}" pattern="yyyy-MM-dd HH:mm" /> | 수정일시:
                 <fmt:formatDate value="${post.updatedAt}" pattern="yyyy-MM-dd HH:mm" />
               </div>
-              <div class="mb-3">${fn:replace(post.content, newLine, "<br />")}</div>
+              <div class="mb-3">${post.content}</div>
             </div>
             <div class="card-footer">
               <a href="/posts" class="btn btn-primary">목록</a>

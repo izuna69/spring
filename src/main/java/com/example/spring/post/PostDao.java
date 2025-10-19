@@ -1,6 +1,8 @@
 package com.example.spring.post;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.mybatis.spring.SqlSessionTemplate;
 import org.slf4j.Logger;
@@ -22,17 +24,26 @@ public class PostDao {
     private SqlSessionTemplate sqlSessionTemplate;
 
     /**
-     * 게시글 목록을 데이터베이스에서 조회하는 메서드
-     * MyBatis 매퍼(postMapper.xml)의 list 구문을 호출하여 전체 게시글을 조회함
+     * 게시글 목록을 조회하는 메서드 (검색 기능 포함)
+     * 검색 조건이 주어지면 해당 조건(title, content, username)에 따라 필터링된 결과를 반환하고,
+     * 검색 조건이 없으면 전체 게시글을 조회함
      *
+     * @param searchType 검색 유형 ("title", "content", "username" 중 하나)
+     * @param searchKeyword 검색어 (빈 문자열 또는 null이면 전체 조회)
      * @return 게시글(PostDto) 리스트, 조회 실패 시 null 또는 빈 리스트 반환
      */
-    public List<PostDto> list() {
+    public List<PostDto> list(String searchType, String searchKeyword) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("searchType", searchType);
+        params.put("searchKeyword", searchKeyword);
+
         List<PostDto> posts = null;
 
         try {
-            posts = sqlSessionTemplate.selectList("postMapper.list");
+            // MyBatis 매퍼(postMapper.xml)의 list 쿼리를 실행하여 게시글 목록을 조회함
+            posts = sqlSessionTemplate.selectList("postMapper.list", params);
         } catch (DataAccessException e) {
+            // 데이터 조회 중 오류가 발생한 경우 로그 출력
             logger.error("게시글 목록 오류 : {}", e.getMessage(), e);
         }
 

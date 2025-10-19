@@ -1,9 +1,11 @@
 package com.example.spring.post;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
-
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 /**
@@ -15,6 +17,8 @@ public class PostService {
 
     @Autowired // PostDao 객체를 자동으로 주입받음
     PostDao postDao;
+  @Autowired
+    PasswordEncoder passwordEncoder;
 
     /**
      * 비밀번호 검증 메서드
@@ -23,15 +27,37 @@ public class PostService {
      */
     private boolean verifyPassword(PostDto post) {
         PostDto originalPost = postDao.read(post.getId());
-        return originalPost != null && originalPost.getPassword().equals(post.getPassword());
-    }
 
-    /**
-     * 게시글 목록을 조회하는 메서드
-     * @return 게시글 리스트 (List<PostDto>)
+        // 게시글 없음
+        if (originalPost == null) return false;
+
+        // matches(사용자입력비밀번호, DB해시비밀번호)
+        return passwordEncoder.matches(post.getPassword(), originalPost.getPassword());
+    }
+       /**
+     * 게시글 목록을 조회하고 검색 조건을 함께 반환하는 메서드
+     * - 검색 조건이 있을 경우 필터링된 결과를 조회
+     * - 검색 조건이 없을 경우 전체 게시글을 조회
+     * - 검색 조건과 결과 목록을 Map 형태로 반환하여 뷰에서 사용 가능
+     *
+     * @param searchType 검색 기준 (예: "title", "content", "username")
+     * @param searchKeyword 검색어 (null 또는 빈 문자열이면 전체 목록 조회)
+     * @return 게시글 목록 및 검색 조건을 담은 Map<String, Object>
+     *         - posts: 게시글 리스트 (List<PostDto>)
+     *         - searchType: 사용자가 입력한 검색 기준
+     *         - searchKeyword: 사용자가 입력한 검색어
      */
-    public List<PostDto> list() {
-        return postDao.list(); // DAO를 통해 DB에서 게시글 목록을 가져옴
+    public Map<String, Object> list(String searchType, String searchKeyword) {
+        // 게시글 목록 조회
+        List<PostDto> posts = postDao.list(searchType, searchKeyword);
+
+        // 결과 맵 생성 및 데이터 추가
+        Map<String, Object> result = new HashMap<>();
+        result.put("posts", posts);
+        result.put("searchType", searchType);
+        result.put("searchKeyword", searchKeyword);
+
+        return result;
     }
 
     /**
