@@ -1,7 +1,7 @@
 package com.example.spring.post;
 
-
 import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -23,14 +23,17 @@ public class PostController {
     @Autowired // PostService 객체를 자동으로 주입
     PostService postService;
 
- /**
+    /**
      * 게시글 목록 화면 요청 처리 (GET 방식)
-     * - 사용자가 검색 조건(searchType, searchKeyword)을 입력하면 필터링된 게시글 목록을 조회
-     * - 검색 조건이 없으면 전체 게시글을 조회
-     * - 조회 결과와 검색 조건을 모델에 담아 뷰로 전달
      *
-     * @param searchType 검색 기준 (예: "title", "content", "username"), null 허용
-     * @param searchKeyword 검색어, null 허용
+     * - 사용자가 검색 조건(searchType, searchKeyword)을 입력하면 해당 조건에 따라 게시글을 필터링
+     * - 검색 조건이 없으면 전체 게시글을 조회
+     * - 페이지 번호(page) 파라미터를 통해 해당 페이지의 게시글만 조회 (기본값은 1)
+     * - 게시글 목록, 검색 조건, 페이지네이션 정보를 모델에 담아 뷰로 전달
+     *
+     * @param searchType 검색 기준 ("title", "content", "username", "all" 등), null 허용
+     * @param searchKeyword 검색어, null 또는 빈 문자열 허용
+     * @param currentPage 현재 페이지 번호 (기본값: 1)
      * @param model 뷰에 전달할 데이터를 담는 객체
      * @return 게시글 목록을 출력할 뷰 이름 ("post/list.jsp")
      */
@@ -38,20 +41,26 @@ public class PostController {
     public String listGet(
         @RequestParam(required = false) String searchType,
         @RequestParam(required = false) String searchKeyword,
+        @RequestParam(value = "page", defaultValue = "1") int currentPage,
         Model model
     ) {
-        // 서비스 계층에서 게시글 목록 및 검색 조건 조회
-        Map<String, Object> result = postService.list(searchType, searchKeyword);
+        int listCountPerPage = 10;  // 한 페이지에서 불러올 게시글 수
+        int pageCountPerPage = 5;   // 하단에 보여질 페이지 수 (예: [1][2][3][4][5])
 
-        // 모델에 게시글 목록과 검색 조건 담기
-        model.addAttribute("posts", result.get("posts"));
-        model.addAttribute("searchType", result.get("searchType"));
-        model.addAttribute("searchKeyword", result.get("searchKeyword"));
+        // 서비스 계층을 통해 게시글 목록 + 검색 조건 + 페이징 정보를 조회
+        Map<String, Object> result = postService.list(
+            currentPage, listCountPerPage, pageCountPerPage, searchType, searchKeyword
+        );
 
-        // 게시글 목록 화면 렌더링
+        // 모델에 조회된 데이터 전달 (뷰에서 활용)
+        model.addAttribute("posts", result.get("posts"));               // 게시글 목록
+        model.addAttribute("pagination", result.get("pagination"));     // 페이지네이션 정보
+        model.addAttribute("searchType", result.get("searchType"));     // 검색 기준
+        model.addAttribute("searchKeyword", result.get("searchKeyword")); // 검색어
+
+        // post/list.jsp 뷰 렌더링
         return "post/list";
     }
-
 
     /**
      * 게시글 등록 화면 요청 처리 (GET 방식)
@@ -71,7 +80,6 @@ public class PostController {
      * @return 등록 성공 시 글 보기로 리다이렉트, 실패 시 글쓰기 화면으로 이동
      */
     @PostMapping("/create")
-    // @RequestMapping(value = "/create", method = RequestMethod.POST)
     public String createPost(PostDto post, RedirectAttributes redirectAttributes) {
         // 서비스 계층을 통해 게시글 등록 처리
         int createdId = postService.create(post);

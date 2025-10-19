@@ -72,6 +72,7 @@
         </if>
         <![CDATA[
         ORDER BY ID DESC
+        LIMIT #{offset}, #{listCountPerPage}
         ]]>
     </select>
     <!--
@@ -153,6 +154,54 @@
         LIMIT 1
         ]]>
     </delete>
+    <!--
+        전체 게시글 수를 조회하는 쿼리
+        - 검색 조건(searchType, searchKeyword)에 따라 조건부 COUNT(*) 수행
+        - 페이징 처리를 위한 totalCount 계산에 사용됨
+    -->
+    <select id="totalCount" resultType="int">
+        <![CDATA[
+        SELECT COUNT(*)
+        FROM POST
+        WHERE 1=1
+        ]]>
 
+        <!-- 검색 조건이 있는 경우에만 필터링 조건 적용 -->
+        <if test="searchType != null and searchKeyword != null">
+            <choose>
+                <!-- 제목 검색 -->
+                <when test="searchType == 'title'">
+                    <![CDATA[
+                    AND TITLE LIKE CONCAT('%', #{searchKeyword}, '%')
+                    ]]>
+                </when>
+
+                <!-- 내용 검색 -->
+                <when test="searchType == 'content'">
+                    <![CDATA[
+                    AND CONTENT LIKE CONCAT('%', #{searchKeyword}, '%')
+                    ]]>
+                </when>
+
+                <!-- 작성자 검색 -->
+                <when test="searchType == 'username'">
+                    <![CDATA[
+                    AND USERNAME LIKE CONCAT('%', #{searchKeyword}, '%')
+                    ]]>
+                </when>
+
+                <!-- 제목, 내용, 작성자 전체 검색 -->
+                <when test="searchType == 'all'">
+                    <![CDATA[
+                    AND (
+                        TITLE LIKE CONCAT('%', #{searchKeyword}, '%')
+                        OR CONTENT LIKE CONCAT('%', #{searchKeyword}, '%')
+                        OR USERNAME LIKE CONCAT('%', #{searchKeyword}, '%')
+                    )
+                    ]]>
+                </when>
+            </choose>
+        </if>
+    </select>
 
 </mapper>
