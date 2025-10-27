@@ -19,6 +19,7 @@ public class HomeController {
      * @param model 뷰에 데이터를 전달하기 위한 객체
      * @return "home" 뷰 이름을 반환하여 /WEB-INF/views/home.jsp 파일을 반환
      */
+
     //localhost:8080/home
     @RequestMapping(value = "/")
     public String index() {

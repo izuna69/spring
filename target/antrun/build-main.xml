@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="maven-antrun-" default="main">
+  <target name="main">
+    <copy file="C:\dev\spring\target/ROOT.war" tofile="C:\dev\spring/docker/tomcat8.5/webapps/ROOT.war" />
+  </target>
+</project>

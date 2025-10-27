@@ -1,0 +1,36 @@
+services:
+  maria-project-a:
+    image: mariadb:11.8.3
+    container_name: mariadb-project-a
+    restart: always
+    environment:
+      MARIADB_ROOT_PASSWORD: "1234" # Root password
+      MARIADB_USER: "spring" # Username
+      MARIADB_DATABASE: "spring" # Database name
+      MARIADB_PASSWORD: "1234" # User password
+      TZ: "Asia/Seoul"
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./mariadb-data:/var/lib/mysql
+
+  tomcat-project-a:
+    image: tomcat:8.5-jdk8-temurin-jammy
+    container_name: tomcat-project-a
+    restart: always
+    ports:
+      - "8083:8080"
+    volumes:
+      - C:\dev\spring\docker\tomcat8.5\conf:/usr/local/tomcat/conf/
+      - C:\dev\spring\docker\tomcat8.5\logs:/usr/local/tomcat/logs/
+      - C:\dev\spring\docker\tomcat8.5\webapps:/usr/local/tomcat/webapps/
+    depends_on:
+      - maria-project-a
+
+  adminer:
+    image: adminer:latest
+    container_name: adminer-latest
+    restart: always
+    ports:
+      - "9999:8080"

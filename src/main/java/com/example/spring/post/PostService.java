@@ -36,7 +36,7 @@ public class PostService {
         // matches(사용자입력비밀번호, DB해시비밀번호)
         return passwordEncoder.matches(post.getPassword(), originalPost.getPassword());
     }
-      /**
+     /**
      * 게시글 목록을 조회하고 검색 조건 및 페이징 정보를 함께 반환하는 메서드
      *
      * - 검색 조건이 주어지면 해당 조건(title, content, username 등)에 따라 게시글을 필터링
@@ -74,6 +74,7 @@ public class PostService {
 
         return result;
     }
+
 
     /**
      * 게시글을 등록하는 메서드

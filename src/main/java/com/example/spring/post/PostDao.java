@@ -22,8 +22,7 @@ public class PostDao {
 
     @Autowired
     private SqlSessionTemplate sqlSessionTemplate;
-
-   /**
+ /**
      * 게시글 목록을 조회하는 메서드 (페이징 및 검색 기능 포함)
      * - 검색 조건이 주어지면 해당 조건(title, content, username 등)에 따라 필터링된 결과를 조회
      * - 검색 조건이 없으면 전체 게시글을 조회

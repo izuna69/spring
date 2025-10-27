@@ -72,7 +72,8 @@
                     </tbody>
                 </table>
                 <%--// 게시글 목록 --%>
-                  <%-- 페이지네이션 --%>
+
+                <%-- 페이지네이션 --%>
                 <nav aria-label="Page navigation">
                     <ul class="pagination justify-content-center">
                         <%-- 이전 페이지 --%>
@@ -107,6 +108,7 @@
                     </ul>
                 </nav>
                 <%--// 페이지네이션 --%>
+
             </div>
         </div>
         <%--// 페이지 내용 --%>

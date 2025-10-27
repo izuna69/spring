@@ -7,3 +7,4 @@ com\example\spring\post\PostDao.class
 com\example\spring\bbs\BbsController.class
 com\example\spring\post\PostDto.class
 com\example\spring\post\PostController.class
+com\example\spring\libs\Pagination.class
