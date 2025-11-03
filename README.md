@@ -1,44 +1,19 @@
 # 계획서
 
-- MVC패턴에 대해
-- 컨트롤러에서의 매핑에 대해
-- Views에 역할
-- 배치파일이 있는 이유
-- 데이터 베이스의 연결
-- localhost:\*\*\*\*/bbses 수정해보기
+## 스프링 _프레임워크_ 이해하기
 
-## 1. MVC 패턴에 대해
+## 흐름도
 
-- **Model** : 데이터, 로직 (예: 게시글 목록, DB 연결 코드)
-- **View** : 사용자 화면 (JSP, HTML)
-- **Controller** : 사용자의 요청을 받고, Model과 View를 연결해줌
-
-## 2. 컨트롤러에서의 매핑
-
-- `@Controller` → 컨트롤러 클래스임을 표시
-- `@RequestMapping("/hello")` → 사용자가 `/hello` 주소로 요청하면 이 메서드 실행
+- dto와 dao의 관계
+- view가 하는일
+- target root
+- tomcat에 배포파일 올리기
 -
 
-## 3. Views의 역할
+# 깃 주소
 
-- 사용자에게 보여줄 **화면(View)** 파일들을 모아두는 공간
-- Spring MVC 기본 구조: `/WEB-INF/views/`
-- 예:
-  - `bbs/list.jsp`
-  - `bbs/showhelloworld.jsp`
-
-## 4. 배포패키지 .war에 대하여
-
-- 현제 프로젝트를 mvn clean install 하는 이유와 배포
-
-## 5. 데이터 베이스 연결
-
-- 데이터베이스가 유저네임,비번,쿼리 연결
-
-## 6. /bbses 빌드하여 배포
-
-- 1~5 활용
-
-### 각 브랜치
-
-- ...
+[김진영](https://github.com/izuna69/spring.git)
+[유리상](https://github.com/h1h1h2h/springl.git)
+[희선상](https://github.com/lhs8890/spring-heesun.git)
+[승호상](https://github.com/sh-0346/spring-sh.git)
+[하은상](https://github.com/watermelonhani/springh.git)
